@@ -1,0 +1,1 @@
+En esta carpeta se contienen los modelos entrenados y las gráficas predecidas. Se contienen los resultados obtenidos hasta ahora
