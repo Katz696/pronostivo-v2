@@ -100,7 +100,7 @@ class engine:
         model.summary()
         return model
 
-    def entrenar_modelo(self,x_train, y_train, x_val, y_val, scaler, values, data, model) :
+    def entrenar_modelo(self,x_train, y_train, x_val, y_val, scaler, values, data, model):
         EPOCHS = 100
         model.fit(x_train, y_train, epochs=EPOCHS, validation_data=(x_val, y_val), batch_size=self.PASOS)
         model.predict(x_val)
@@ -161,7 +161,7 @@ class engine:
             last_day = datetime.strptime(dataPrepare.index.max(), '%Y-%m') + relativedelta(months=1)
             future_days = [last_day + relativedelta(months=i) for i in range(pasos)]
             for i in range(len(future_days)):
-                future_days[i] = str(future_days[i])[:7]
+                future_days[i] = str(future_days[i])[:10]
             # print("pasaste por aqui")
             future_data = pd.DataFrame(future_days)
             #renombramiento del campo 
@@ -256,18 +256,12 @@ class engine:
         with self.get_sqlconnection(self.sql_server) as cursor:
             datos = pd.read_sql_query(self.query, cursor)
             datos = self.set_index_datetime(datos)
-            # last_day = datetime.strptime(datos.index.max(), '%Y-%m') + relativedelta(month=1)
-            # print(last_day)
-            # future_days = [(last_day + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(self.PASOS)]
-            # print(future_days)
-            # last_day = datos.index.max() + timedelta(days=1)
-            # future_days = [last_day + timedelta(days=i) for i in range(self.PASOS)]
             last_day = datetime.strptime(datos.index.max(), '%Y-%m' ) + relativedelta(months=1)
             print(last_day)
             future_days = [last_day + relativedelta(months=i) for i in range(self.PASOS)]
             print(future_days)
             for i in range(len(future_days)):
-                future_days[i] = str(future_days[i])[:10]
+                future_days[i] = str(future_days[i])[:7]
             # future_data = pd.DataFrame(future_days)
             # future_data.columns = ['fecha']
             future_data = pd.DataFrame(future_days, columns=['fecha'])
@@ -291,7 +285,7 @@ class engine:
                     x_test = self.agregarNuevoValor(x_test, parcial[0])
                 adimen = [x for x in results]
                 inverted = scaler.inverse_transform(adimen)
-                y_pred = pd.DataFrame(inverted.astype(int))
+                # y_pred = pd.DataFrame(inverted.astype(int))
                 future_data[column]= inverted.astype(int)
             # Parte nueva para guardar los modelos
             datetim_e = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
