@@ -70,34 +70,14 @@ def setSQLServerConfig(server_name, database_name,driver):
 def check_engine(sql_serverConfig):
     console.print("[bold green]Conectando con la base de datos...[/bold green]")
     query = """
-                    DECLARE @cols AS NVARCHAR(MAX)
-            DECLARE @query AS NVARCHAR(MAX)
-
-            SET @cols = STUFF((SELECT ', SUM(CASE WHEN [P].[id] = ' + CONVERT(NVARCHAR(10), [SUB]. [id]) + ' THEN [H].[cantidad] ELSE 0 END) AS [' + [SUB].[producto] + ']'
-            FROM (
-            SELECT TOP 5
-            [H].[id_DimProducto] AS id,
-            [P].[producto] AS producto
-            FROM [demo_prediccion].[dbo].[hechos] AS [H]
-            INNER JOIN [demo_prediccion].[dbo].[Dim_productos] AS [P] ON [P].[id] = [H].[id_DimProducto]
-            GROUP BY [H].[id_DimProducto], [P].[producto]
-            ORDER BY SUM([H].[cantidad]) DESC, [H].[id_DimProducto] ASC
-            ) AS SUB
-            FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'),1,2,'')
-
-            SET @query = '
             SELECT
-            SUBSTRING(CAST([F].[fecha] AS VARCHAR(256)), 0, 8) AS fecha, ' + @cols + '
+            SUBSTRING(CAST([F].[Fecha] AS VARCHAR),0,8) AS fecha,
+            SUM([H].[cantidad]) AS cantidad
             FROM
-            [demo_prediccion].[dbo].[hechos] AS [H]
-            INNER JOIN [demo_prediccion].[dbo].[Dim_fechas] AS [F] ON [F].[id] = [H].[id_DimFechas]
-            INNER JOIN [demo_prediccion].[dbo].[Dim_productos] AS [P] ON [P].[id] = [H].[id_DimProducto]
-            GROUP BY
-            SUBSTRING(CAST([F].[fecha] AS VARCHAR(256)), 0, 8)
-            ORDER BY
-            SUBSTRING(CAST([F].[fecha] AS VARCHAR(256)), 0, 8)'
-
-            EXEC(@query)
+            [demo_prediccion].[dbo]. [hechos] AS [H]
+            INNER JOIN [demo_prediccion].[dbo].[Dim_fechas] AS [f] ON [H].[id_DimFechas] = [F].[id]
+            GROUP BY SUBSTRING(CAST([F].[Fecha] AS VARCHAR),0,8)
+            ORDER BY SUBSTRING(CAST([F].[Fecha] AS VARCHAR),0,8)
         """
     obj = engine(sql_serverConfig, query)
     try: 
@@ -218,7 +198,7 @@ def showSettingsModel(obj,sql_serverConfig,query):
         contiNue = False
         console.print("[bold green]Iniciando proceso de predicción[/] "+model_path)
         obj.modelPredicFuncion(sql_serverConfig,query,12, model_path)
-        console.print("[bold green] Proceso terminado con éxito [/]")
+        # console.print("[bold green] Proceso terminado con éxito [/]")
 
 
 
