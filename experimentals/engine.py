@@ -16,7 +16,7 @@ from keras.layers import Dense, Activation, Flatten
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import IsolationForest
 import keyboard  # Necesario para detectar la tecla
-import shutil
+import json
 
 
 
@@ -188,6 +188,7 @@ class engine:
             future_data.index = pd.to_datetime(future_data.index)
             return dataPrepare, future_data
         
+    #Modulo para guardar las gráficas, cuando se hace una predicción    
     def GraphicDataCreate(self,datos, futureData, model_path):
 
         #tomamos la ruta del modelo y eliminamos el nombre del modelo
@@ -262,8 +263,6 @@ class engine:
             print(future_days)
             for i in range(len(future_days)):
                 future_days[i] = str(future_days[i])[:7]
-            # future_data = pd.DataFrame(future_days)
-            # future_data.columns = ['fecha']
             future_data = pd.DataFrame(future_days, columns=['fecha'])
             model = self.crear_modeloFF()
             dirmodels_name = './models/'+datetime.now().strftime('%Y-%m-%d')
@@ -271,7 +270,7 @@ class engine:
                 os.makedirs(dirmodels_name, exist_ok=True)
             data = []
             total_col = len(datos.columns)
-            print("total de columnas"+str(total_col))
+            # print("total de columnas"+str(total_col))
             for i,column in enumerate(datos.columns):
                 data = datos.filter([column])
                 data.set_index(datos.index, inplace=True)
@@ -285,7 +284,6 @@ class engine:
                     x_test = self.agregarNuevoValor(x_test, parcial[0])
                 adimen = [x for x in results]
                 inverted = scaler.inverse_transform(adimen)
-                # y_pred = pd.DataFrame(inverted.astype(int))
                 future_data[column]= inverted.astype(int)
             # Parte nueva para guardar los modelos
             datetim_e = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -293,6 +291,19 @@ class engine:
             os.makedirs(model_path, exist_ok=True)
             model_name = model_path+'/model_training-'+datetim_e+'.keras'
             model.save(model_name)
+
+            #Preparamos un archivo para guardar la metadata
+            metaData = model_path+'/metadata.json'
+            date, hour = datetim_e.split('_')
+            with open(metaData, 'w') as file:
+                json.dump([
+                    {
+                    '-> FECHA_ENTRENAMIENTO:': date,
+                    '-> HORA_ENTRENAMIENTO:':hour,
+                    '-> TOTAL_DATOS:': str(datos.size)
+                    }
+                ],file)
+
             future_data = self.set_index_datetime(future_data)
 
             datos.index = pd.to_datetime(datos.index)
